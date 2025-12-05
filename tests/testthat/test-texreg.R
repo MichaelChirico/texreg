@@ -316,12 +316,12 @@ test_that("arguments work in screenreg function", {
 })
 
 test_that("knitreg function works", {
-  with_mock(requireNamespace = function (package, ...) {
+  with_mocked_bindings(requireNamespace = function (package, ...) {
     ifelse(package == "knitr", return(FALSE), return(TRUE))
   }, {
     expect_error(knitreg(list(model1, model1)), regexp = "knitreg requires the 'knitr' package to be installed")
   })
-  with_mock(requireNamespace = function (package, ...) {
+  with_mocked_bindings(requireNamespace = function (package, ...) {
       ifelse(package == "rmarkdown", return(FALSE), return(TRUE))
     }, {
     expect_error(knitreg(list(model1, model1)), regexp = "knitreg requires the 'rmarkdown' package to be installed")
