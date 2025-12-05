@@ -336,32 +336,36 @@ test_that("knitreg function works", {
   knitr::opts_knit$set(out.format = "markdown")
 
   local_mocked_bindings(current_input = function() NULL, .package = "knitr")
-  with_mocked_bindings(all_output_formats = function (input) {"html_document"}, .package = "rmarkdown", {
-    expect_equivalent(knitreg(model1), htmlreg(model1, doctype = FALSE))
-  })
-  with_mocked_bindings(all_output_formats = function (input) {"bookdown::html_document2"}, .package = "rmarkdown", {
-    expect_equivalent(knitreg(model1), htmlreg(model1, doctype = FALSE))
-  })
-  with_mocked_bindings(all_output_formats = function (input) {"pdf_document"}, .package = "rmarkdown", {
-    expect_equivalent(knitreg(model1), texreg(model1, use.packages = FALSE))
-  })
-  with_mocked_bindings(all_output_formats = function (input) {"bookdown::pdf_document2"}, .package = "rmarkdown", {
-    expect_equivalent(knitreg(model1), texreg(model1, use.packages = FALSE))
-  })
-  with_mocked_bindings(all_output_formats = function (input) {"bookdown::pdf_book"}, .package = "rmarkdown", {
-    expect_equivalent(knitreg(model1), texreg(model1, use.packages = FALSE))
-  })
+
+  test_env <- new.env()
+  local_mocked_bindings(all_output_formats = function(input) test_env$output_format, .package = "rmarkdown")
+
+  test_env$output_format <- "html_document"
+  expect_equivalent(knitreg(model1), htmlreg(model1, doctype = FALSE))
+
+  test_env$output_format <- "bookdown::html_document2"
+  expect_equivalent(knitreg(model1), htmlreg(model1, doctype = FALSE))
+
+  test_env$output_format <- "pdf_document"
+  expect_equivalent(knitreg(model1), texreg(model1, use.packages = FALSE))
+
+  test_env$output_format <- "bookdown::pdf_document2"
+  expect_equivalent(knitreg(model1), texreg(model1, use.packages = FALSE))
+
+  test_env$output_format <- "bookdown::pdf_book"
+  expect_equivalent(knitreg(model1), texreg(model1, use.packages = FALSE))
+
   # formatting table to test word output in knitreg
   mr <- matrixreg(model1, output.type = "ascii", include.attributes = FALSE, trim = TRUE)
   colnames(mr) <- mr[1, ]
   mr <- mr[-1, ]
 
-  with_mocked_bindings(all_output_formats = function (input) {"word_document"}, .package = "rmarkdown", {
-    expect_equivalent(knitreg(model1), knitr::kable(mr))
-  })
-  with_mocked_bindings(all_output_formats = function (input) {"bookdown::word_document2"}, .package = "rmarkdown", {
-    expect_equivalent(knitreg(model1), knitr::kable(mr))
-  })})
+  test_env$output_format <- "word_document"
+  expect_equivalent(knitreg(model1), knitr::kable(mr))
+
+  test_env$output_format <- "bookdown::word_document2"
+  expect_equivalent(knitreg(model1), knitr::kable(mr))
+})
 
 test_that("matrixreg function works", {
   expect_equal(nrow(matrixreg(model1)), 8)
